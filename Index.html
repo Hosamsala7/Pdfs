@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Pro Editor | محرر وتقسيم PDF احترافي</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="data:application/manifest+json,{'name':'PDF Pro Editor','short_name':'PDF Pro','theme_color':'%234f46e5','background_color':'%23f1f5f9','display':'standalone','scope':'./','start_url':'./'}">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js">
+    </script><script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js">
+    </script><script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js">
+    </script><style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --primary-light: #818cf8;
+            --primary-bg: #eef2ff;
+            --surface: #ffffff;
+            --surface-alt: #f8fafc;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --border-focus: #a5b4fc;
+            --danger: #ef4444;
+            --danger-light: #fee2e2;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.07);
+            --shadow-lg: 0 20px 25px -5px rgba(0,0,0,0.08);
+            --radius-sm: 12px;
+            --radius: 16px;
+            --radius-lg: 24px;
+            --radius-xl: 32px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: #f1f5f9;
+            color: var(--text);
+            min-height: 100vh;
+        }
+        /* NAVBAR */
+        .navbar {
+            background: var(--surface);
+            padding: 0.8rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .logo-icon {
+            width: 46px;
+            height: 46px;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.4rem;
+        }
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .nav-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        /* BUTTONS */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-family: 'Tajawal';
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border: 1.5px solid transparent;
+            transition: all 0.2s;
+            white-space: nowrap;
+            text-decoration: none;
+        }
+        .btn-primary { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 4px 14px rgba(79,70,229,0.3); }
+        .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+        .btn-outline { background: var(--surface); color: var(--primary); border-color: var(--primary-light); }
+        .btn-outline:hover { background: var(--primary-bg); }
+        .btn-ghost { background: transparent; color: var(--text-muted); border-color: transparent; }
+        .btn-ghost:hover { background: var(--surface-alt); color: var(--text); }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-sm { padding: 7px 14px; font-size: 0.8rem; }
+        .btn-lg { padding: 14px 30px; font-size: 1.1rem; }
+        .btn:disabled { opacity: 0.5; pointer-events: none; }
+        /* MAIN LAYOUT */
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+        /* TABS */
+        .tabs-nav {
+            display: flex;
+            gap: 6px;
+            background: var(--surface);
+            padding: 6px;
+            border-radius: 50px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 24px;
+            width: fit-content;
+            border: 1px solid var(--border);
+        }
+        .tab-btn {
+            padding: 12px 28px;
+            border-radius: 40px;
+            border: none;
+            background: transparent;
+            font-family: 'Tajawal';
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 6px 16px rgba(79,70,229,0.25);
+        }
+        .tab-btn i { font-size: 1.1rem; }
+        /* CARD */
+        .card {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+        .card-header {
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+        .card-header h2 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .card-header p { color: var(--text-muted); margin-top: 6px; }
+        /* UPLOAD ZONE */
+        .upload-zone {
+            background: var(--surface-alt);
+            border: 2.5px dashed #cbd5e1;
+            border-radius: var(--radius-lg);
+            padding: 3rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .upload-zone:hover, .upload-zone.drag-over {
+            border-color: var(--primary);
+            background: #f5f7ff;
+        }
+        .upload-zone i { font-size: 3.5rem; color: var(--primary); margin-bottom: 1rem; }
+        .upload-zone .main-text { font-size: 1.4rem; font-weight: 700; }
+        .upload-zone .sub-text { color: var(--text-muted); }
+        /* FILE INFO BAR */
+        .file-info-bar {
+            background: var(--primary-bg);
+            border-radius: 50px;
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .badge-page {
+            background: var(--primary);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+        /* RANGE CARDS */
+        .ranges-section { margin: 24px 0; }
+        .range-card {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            margin-bottom: 14px;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.2s;
+        }
+        .range-card:hover { border-color: var(--primary-light); }
+        .range-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+        .range-header h3 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+        .range-count {
+            background: #dbeafe;
+            color: #1e40af;
+            padding: 4px 14px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        .range-inputs {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .input-group label {
+            font-weight: 600;
+            color: var(--text-muted);
+            min-width: 110px;
+            font-size: 0.9rem;
+        }
+        .input-group input {
+            padding: 10px 16px;
+            border: 1.5px solid var(--border);
+            border-radius: 40px;
+            font-family: 'Tajawal';
+            font-size: 0.95rem;
+            width: 120px;
+            background: var(--surface-alt);
+            text-align: center;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .input-group input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(79,70,229,0.1);
+        }
+        .icon-btn {
+            background: var(--surface-alt);
+            border: none;
+            padding: 9px 13px;
+            border-radius: 50px;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.15s;
+        }
+        .icon-btn:hover { background: var(--danger-light); color: var(--danger); }
+        .add-range-btn {
+            background: var(--surface);
+            border: 2px dashed var(--primary);
+            color: var(--primary);
+            padding: 13px 24px;
+            border-radius: 50px;
+            font-family: 'Tajawal';
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+        }
+        .add-range-btn:hover { background: var(--primary-bg); }
+        /* EDITOR TOOLBAR */
+        .editor-toolbar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        /* PDF VIEWER */
+        .pdf-viewer {
+            background: #e2e8f0;
+            border-radius: var(--radius);
+            padding: 20px;
+            max-height: 500px;
+            overflow-y: auto;
+            text-align: center;
+        }
+        .pdf-viewer canvas {
+            display: block;
+            margin: 8px auto;
+            box-shadow: var(--shadow);
+            border-radius: 4px;
+        }
+        /* MODAL */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        .modal {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            padding: 30px;
+            max-width: 550px;
+            width: 90%;
+            box-shadow: var(--shadow-lg);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal h3 { margin-bottom: 20px; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 6px; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-family: 'Tajawal';
+        }
+        .form-row { display: flex; gap: 12px; }
+        .form-row .form-group { flex: 1; }
+        /* TOAST */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            background: #1e293b;
+            color: white;
+            padding: 14px 24px;
+            border-radius: 50px;
+            font-weight: 600;
+            z-index: 300;
+            animation: slideUp 0.3s;
+        }
+        @keyframes slideUp { from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);} }
+        .hidden { display: none !important; }
+        @media (max-width: 768px) {
+            .navbar { padding: 0.6rem 1rem; }
+            .logo-text { font-size: 1.2rem; }
+            .range-inputs { flex-direction: column; align-items: flex-start; }
+            .tabs-nav { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <div class="logo-area">
+        <div class="logo-icon"><i class="fas fa-file-pdf"></i></div>
+        <h1 class="logo-text">PDF Pro Editor</h1>
+    </div>
+    <div class="nav-actions">
+        <button class="btn btn-outline btn-sm" onclick="document.getElementById('globalFileInput').click()"><i class="fas fa-folder-open"></i> فتح PDF</button>
+        <button class="btn btn-primary btn-sm" onclick="saveCurrentPDF()"><i class="fas fa-save"></i> حفظ</button>
+        <button class="btn btn-ghost btn-sm" onclick="exportAsImages()"><i class="fas fa-image"></i> تصدير صور</button>
+    </div>
+    <input type="file" id="globalFileInput" accept=".pdf,application/pdf" style="display:none" onchange="globalFileHandler(this.files)">
+    <input type="file" id="imageFileInput" accept="image/*" style="display:none" onchange="handleImageInsert(this.files)">
+</nav>
+
+<!-- MAIN CONTAINER -->
+<div class="app-container">
+    <!-- التبويبات -->
+    <div class="tabs-nav">
+        <button class="tab-btn active" data-tab="editor"><i class="fas fa-edit"></i> تحرير PDF</button>
+        <button class="tab-btn" data-tab="splitter"><i class="fas fa-cut"></i> تقسيم النطاقات</button>
+        <button class="tab-btn" data-tab="merge"><i class="fas fa-layer-group"></i> دمج الملفات</button>
+    </div>
+
+    <!-- ============ تبويب المحرر ============ -->
+    <div id="tab-editor" class="card">
+        <div class="card-header">
+            <h2><i class="fas fa-edit"></i> تحرير ملف PDF</h2>
+            <p>افتح ملف PDF وقم بالتعديل عليه: نصوص، صور، نماذج، تمييز، والمزيد</p>
+        </div>
+        <div id="editorUploadZone" class="upload-zone">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <div class="main-text">اسحب ملف PDF هنا أو اضغط للفتح</div>
+            <div class="sub-text">جميع العمليات تتم داخل متصفحك بأمان كامل</div>
+        </div>
+        <div id="editorWorkspace" class="hidden">
+            <div class="file-info-bar">
+                <span id="editorFileName" style="font-weight:700;"></span>
+                <span class="badge-page" id="editorPageCount"></span>
+            </div>
+            <div class="editor-toolbar">
+                <button class="btn btn-outline btn-sm" onclick="editText()"><i class="fas fa-font"></i> تحرير نص</button>
+                <button class="btn btn-outline btn-sm" onclick="highlightText()"><i class="fas fa-highlighter"></i> تمييز</button>
+                <button class="btn btn-outline btn-sm" onclick="addFormField()"><i class="fas fa-wpforms"></i> إضافة حقل</button>
+                <button class="btn btn-outline btn-sm" onclick="document.getElementById('imageFileInput').click()"><i class="fas fa-image"></i> إضافة صورة</button>
+                <button class="btn btn-outline btn-sm" onclick="deletePage()"><i class="fas fa-trash-alt"></i> حذف الصفحة</button>
+                <button class="btn btn-outline btn-sm" onclick="searchInDoc()"><i class="fas fa-search"></i> بحث</button>
+            </div>
+            <div class="pdf-viewer" id="editorPDFViewer"></div>
+        </div>
+    </div>
+
+    <!-- ============ تبويب تقسيم النطاقات ============ -->
+    <div id="tab-splitter" class="card hidden">
+        <div class="card-header">
+            <h2><i class="fas fa-cut"></i> تقسيم باستخدام النطاق</h2>
+            <p>ارفع ملف PDF، حدد عدة نطاقات — كل نطاق يُحفظ كملف PDF منفصل</p>
+        </div>
+        <div id="splitterUploadZone" class="upload-zone">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <div class="main-text">اسحب ملف PDF هنا أو اضغط للرفع</div>
+            <div class="sub-text">يمكنك تحديد عدة نطاقات (مثلاً: 1-50، 51-100)</div>
+        </div>
+        <div id="splitterWorkspace" class="hidden">
+            <div class="file-info-bar">
+                <span id="splitterFileName" style="font-weight:700;"></span>
+                <span class="badge-page">إجمالي الصفحات: <span id="splitterTotalPages">0</span></span>
+            </div>
+            <div class="ranges-section">
+                <h3 style="margin-bottom:16px;"><i class="fas fa-layer-group"></i> النطاقات</h3>
+                <div id="rangesContainer"></div>
+                <button class="add-range-btn" onclick="addRange()"><i class="fas fa-plus-circle"></i> إضافة نطاق +</button>
+            </div>
+            <div style="margin-top:20px;display:flex;gap:12px;flex-wrap:wrap;">
+                <button class="btn btn-primary btn-lg" onclick="executeSplit()"><i class="fas fa-scissors"></i> تقسيم PDF (حفظ كل نطاق في ملف)</button>
+                <button class="btn btn-outline" onclick="resetSplitter()"><i class="fas fa-undo-alt"></i> رفع ملف آخر</button>
+            </div>
+            <div id="splitProgress" class="hidden" style="margin-top:16px;">
+                <progress value="0" max="100" style="width:100%;height:10px;border-radius:20px;"></progress>
+                <p style="color:var(--text-muted);margin-top:8px;">جارٍ معالجة النطاقات...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ تبويب الدمج ============ -->
+    <div id="tab-merge" class="card hidden">
+        <div class="card-header">
+            <h2><i class="fas fa-layer-group"></i> دمج ملفات PDF</h2>
+            <p>ارفع عدة ملفات PDF لدمجها في ملف واحد</p>
+        </div>
+        <div id="mergeUploadZone" class="upload-zone">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <div class="main-text">اسحب ملفات PDF هنا أو اضغط للرفع</div>
+            <div class="sub-text">يمكنك إعادة ترتيب الملفات قبل الدمج</div>
+        </div>
+        <div id="mergeFileList" style="margin:20px 0;"></div>
+        <button id="mergeExecuteBtn" class="btn btn-primary btn-lg hidden" onclick="executeMerge()"><i class="fas fa-compress-alt"></i> دمج الملفات الآن</button>
+    </div>
+</div>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="textModal" style="display:none;">
+    <div class="modal">
+        <h3><i class="fas fa-edit"></i> تحرير النص</h3>
+        <div class="form-group"><label>النص الجديد</label><textarea id="newTextInput" rows="3"></textarea></div>
+        <div class="form-row">
+            <div class="form-group"><label>الحجم</label><input type="number" id="fontSizeInput" value="16" min="8" max="72"></div>
+            <div class="form-group"><label>اللون</label><input type="color" id="fontColorInput" value="#000000" style="height:42px;"></div>
+        </div>
+        <div style="display:flex;gap:12px;justify-content:flex-end;">
+            <button class="btn btn-ghost" onclick="$('textModal').style.display='none'">إلغاء</button>
+            <button class="btn btn-primary" onclick="applyTextEdit()">تطبيق</button>
+        </div>
+    </div>
+</div>
+
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+const { PDFDocument, rgb } = PDFLib;
+
+// ==================== GLOBAL STATE ====================
+let currentDoc = null;
+let currentPdfJs = null;
+let currentBytes = null;
+let currentTotalPages = 0;
+let currentFileName = '';
+
+let splitterDoc = null;
+let splitterPdfJs = null;
+let splitterBytes = null;
+let splitterTotalPages = 0;
+let splitterFileName = '';
+let ranges = [{ from: 1, to: 1 }];
+
+let mergeFiles = [];
+
+// ==================== UTILS ====================
+function toast(msg) {
+    const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 3000);
+}
+function $(id) { return document.getElementById(id); }
+
+// ==================== TABS ====================
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const tab = btn.dataset.tab;
+        ['tab-editor','tab-splitter','tab-merge'].forEach(t => $(t).classList.add('hidden'));
+        $(`tab-${tab}`).classList.remove('hidden');
+    });
+});
+
+// ==================== GLOBAL FILE INPUT ====================
+function globalFileHandler(files) {
+    if (!files || files.length === 0) return;
+    // تحديد التبويب النشط
+    const activeTab = document.querySelector('.tab-btn.active').dataset.tab;
+    if (activeTab === 'editor') {
+        loadFileForEditor(files[0]);
+    } else if (activeTab === 'splitter') {
+        loadFileForSplitter(files[0]);
+    } else if (activeTab === 'merge') {
+        addMergeFile(files[0]);
+    }
+    $('globalFileInput').value = '';
+}
+
+// ==================== EDITOR ====================
+const editorUploadZone = $('editorUploadZone');
+editorUploadZone.addEventListener('click', () => $('globalFileInput').click());
+editorUploadZone.addEventListener('dragover', e => { e.preventDefault(); editorUploadZone.classList.add('drag-over'); });
+editorUploadZone.addEventListener('dragleave', () => editorUploadZone.classList.remove('drag-over'));
+editorUploadZone.addEventListener('drop', e => {
+    e.preventDefault();
+    editorUploadZone.classList.remove('drag-over');
+    if (e.dataTransfer.files.length > 0) loadFileForEditor(e.dataTransfer.files[0]);
+});
+
+async function loadFileForEditor(file) {
+    if (file.type !== 'application/pdf') return toast('الرجاء اختيار ملف PDF');
+    currentFileName = file.name;
+    const buf = await file.arrayBuffer();
+    currentBytes = buf;
+    currentDoc = await PDFDocument.load(buf);
+    currentPdfJs = await pdfjsLib.getDocument({ data: buf }).promise;
+    currentTotalPages = currentDoc.getPageCount();
+    
+    $('editorFileName').textContent = currentFileName;
+    $('editorPageCount').textContent = `${currentTotalPages} صفحة`;
+    editorUploadZone.classList.add('hidden');
+    $('editorWorkspace').classList.remove('hidden');
+    await renderEditorPages();
+    toast(`تم فتح الملف (${currentTotalPages} صفحة)`);
+}
+
+async function renderEditorPages() {
+    const viewer = $('editorPDFViewer');
+    viewer.innerHTML = '';
+    for (let i = 1; i <= currentTotalPages; i++) {
+        const page = await currentPdfJs.getPage(i);
+        const vp = page.getViewport({ scale: 1.3 });
+        const canvas = document.createElement('canvas');
+        canvas.width = vp.width; canvas.height = vp.height;
+        canvas.dataset.page = i;
+        await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+        canvas.addEventListener('dblclick', () => {
+            $('textModal').style.display = 'flex';
+        });
+        viewer.appendChild(canvas);
+    }
+}
+
+async function refreshEditor() {
+    if (!currentDoc) return;
+    const bytes = await currentDoc.save();
+    currentBytes = bytes;
+    currentPdfJs = await pdfjsLib.getDocument({ data: bytes }).promise;
+    currentTotalPages = currentDoc.getPageCount();
+    $('editorPageCount').textContent = `${currentTotalPages} صفحة`;
+    await renderEditorPages();
+}
+
+function editText() {
+    if (!currentDoc) return toast('افتح ملف PDF أولاً');
+    $('textModal').style.display = 'flex';
+}
+
+async function applyTextEdit() {
+    const txt = $('newTextInput').value.trim();
+    if (!txt) { toast('أدخل نصاً'); return; }
+    const size = parseInt($('fontSizeInput').value) || 16;
+    const color = $('fontColorInput').value;
+    const hex2rgb = h => {
+        const r = parseInt(h.slice(1,3),16)/255;
+        const g = parseInt(h.slice(3,5),16)/255;
+        const b = parseInt(h.slice(5,7),16)/255;
+        return {r,g,b};
+    };
+    const {r,g,b} = hex2rgb(color);
+    try {
+        const page = currentDoc.getPages()[0];
+        page.drawText(txt, {
+            x: 60, y: page.getSize().height - 80, size,
+            color: rgb(r,g,b),
+            font: await currentDoc.embedFont('Helvetica')
+        });
+        await refreshEditor();
+        $('textModal').style.display = 'none';
+        toast('تمت إضافة النص');
+    } catch(e) { toast('خطأ: '+e.message); }
+}
+
+function highlightText() {
+    if (!currentDoc) return;
+    try {
+        const page = currentDoc.getPages()[0];
+        page.drawRectangle({
+            x: 100, y: page.getSize().height - 120, width: 200, height: 22,
+            color: rgb(1, 0.95, 0.5), opacity: 0.5
+        });
+        refreshEditor();
+        toast('تم إضافة تمييز توضيحي');
+    } catch(e) { toast('خطأ'); }
+}
+
+function addFormField() {
+    if (!currentDoc) return;
+    const t = prompt('نوع الحقل (1=نص, 2=اختيار):','1');
+    const label = prompt('اسم الحقل:','حقل');
+    if (!label) return;
+    try {
+        const page = currentDoc.getPages()[0];
+        const { height } = page.getSize();
+        page.drawText(label+': ', { x: 50, y: height - 250, size: 12 });
+        if (t === '1') page.drawRectangle({ x: 160, y: height-255, width: 150, height: 20, color: rgb(0.8,0.8,0.8), opacity: 0.5 });
+        refreshEditor();
+        toast('تم إضافة الحقل');
+    } catch(e) { toast('خطأ'); }
+}
+
+function handleImageInsert(files) {
+    if (!files || !currentDoc) return;
+    const file = files[0];
+    const reader = new FileReader();
+    reader.onload = async () => {
+        const bytes = new Uint8Array(reader.result);
+        try {
+            const img = file.type === 'image/png' ? await currentDoc.embedPng(bytes) : await currentDoc.embedJpg(bytes);
+            const page = currentDoc.getPages()[0];
+            const dims = img.scale(0.4);
+            page.drawImage(img, { x: 100, y: page.getSize().height/2, width: dims.width, height: dims.height });
+            await refreshEditor();
+            toast('تمت إضافة الصورة');
+        } catch(e) { toast('خطأ في إضافة الصورة'); }
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+async function deletePage() {
+    if (!currentDoc || currentTotalPages <= 1) return toast('لا يمكن حذف الصفحة الوحيدة');
+    if (!confirm('حذف أول صفحة؟')) return;
+    currentDoc.removePage(0);
+    await refreshEditor();
+    toast('تم الحذف');
+}
+
+async function searchInDoc() {
+    if (!currentPdfJs) return;
+    const q = prompt('كلمة البحث:');
+    if (!q) return;
+    let count = 0;
+    for (let i = 1; i <= currentTotalPages; i++) {
+        const page = await currentPdfJs.getPage(i);
+        const text = (await page.getTextContent()).items.map(it => it.str).join(' ');
+        if (text.includes(q)) {
+            count++;
+            const canvas = document.querySelector(`#editorPDFViewer canvas[data-page="${i}"]`);
+            if (canvas) { canvas.style.outline = '4px solid #fbbf24'; setTimeout(() => canvas.style.outline = '', 2500); }
+        }
+    }
+    toast(count ? `وجد "${q}" في ${count} صفحة` : `لم يوجد "${q}"`);
+}
+
+async function saveCurrentPDF() {
+    if (!currentDoc) return toast('لا يوجد ملف');
+    const bytes = await currentDoc.save();
+    const blob = new Blob([bytes], { type: 'application/pdf' });
+    saveAs(blob, currentFileName.replace('.pdf','_edited.pdf'));
+    toast('تم الحفظ');
+}
+
+async function exportAsImages() {
+    if (!currentPdfJs) return toast('افتح ملفاً أولاً');
+    try {
+        if (typeof JSZip === 'undefined') {
+            await new Promise((res,rej)=>{
+                const s=document.createElement('script');
+                s.src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+                s.onload=res;s.onerror=rej;document.head.appendChild(s);
+            });
+        }
+        const zip = new JSZip();
+        for (let i=1;i<=currentTotalPages;i++) {
+            const page = await currentPdfJs.getPage(i);
+            const vp = page.getViewport({scale:2});
+            const c=document.createElement('canvas');c.width=vp.width;c.height=vp.height;
+            await page.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;
+            const blob = await new Promise(r=>c.toBlob(r,'image/png'));
+            zip.file(`page_${i}.png`,blob);
+        }
+        const zipBlob = await zip.generateAsync({type:'blob'});
+        saveAs(zipBlob,'pages.zip');
+        toast('تم التصدير');
+    } catch(e) { toast('خطأ'); }
+}
+
+// ==================== SPLITTER ====================
+const splitterUploadZone = $('splitterUploadZone');
+splitterUploadZone.addEventListener('click', () => $('globalFileInput').click());
+splitterUploadZone.addEventListener('dragover', e => { e.preventDefault(); splitterUploadZone.classList.add('drag-over'); });
+splitterUploadZone.addEventListener('dragleave', () => splitterUploadZone.classList.remove('drag-over'));
+splitterUploadZone.addEventListener('drop', e => {
+    e.preventDefault();
+    splitterUploadZone.classList.remove('drag-over');
+    if (e.dataTransfer.files.length > 0) loadFileForSplitter(e.dataTransfer.files[0]);
+});
+
+async function loadFileForSplitter(file) {
+    if (file.type !== 'application/pdf') return toast('اختر PDF');
+    splitterFileName = file.name;
+    const buf = await file.arrayBuffer();
+    splitterBytes = buf;
+    splitterDoc = await PDFDocument.load(buf);
+    splitterTotalPages = splitterDoc.getPageCount();
+    splitterPdfJs = await pdfjsLib.getDocument({ data: buf }).promise;
+    
+    $('splitterFileName').textContent = splitterFileName;
+    $('splitterTotalPages').textContent = splitterTotalPages;
+    splitterUploadZone.classList.add('hidden');
+    $('splitterWorkspace').classList.remove('hidden');
+    ranges = [{ from: 1, to: splitterTotalPages }];
+    renderRanges();
+    toast(`تم رفع الملف (${splitterTotalPages} صفحة)`);
+}
+
+function renderRanges() {
+    const container = $('rangesContainer');
+    container.innerHTML = '';
+    ranges.forEach((r, idx) => {
+        const card = document.createElement('div');
+        card.className = 'range-card';
+        card.innerHTML = `
+            <div class="range-header">
+                <h3>النطاق ${idx+1}</h3>
+                <span class="range-count">${r.to - r.from + 1} صفحة</span>
+                ${ranges.length > 1 ? `<button class="icon-btn" onclick="removeRange(${idx})"><i class="fas fa-trash-alt"></i></button>` : ''}
+            </div>
+            <div class="range-inputs">
+                <div class="input-group"><label>من الصفحة رقم:</label><input type="number" min="1" max="${splitterTotalPages}" value="${r.from}" onchange="updateRange(${idx},'from',this.value)"></div>
+                <div class="input-group"><label>إلى الصفحة رقم:</label><input type="number" min="1" max="${splitterTotalPages}" value="${r.to}" onchange="updateRange(${idx},'to',this.value)"></div>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+function updateRange(idx, field, val) {
+    const v = parseInt(val);
+    if (isNaN(v) || v < 1) return;
+    if (field === 'from') {
+        if (v > ranges[idx].to) return;
+        ranges[idx].from = v;
+    } else {
+        if (v < ranges[idx].from) return;
+        if (v > splitterTotalPages) return;
+        ranges[idx].to = v;
+    }
+    renderRanges();
+}
+
+function addRange() {
+    ranges.push({ from: 1, to: splitterTotalPages });
+    renderRanges();
+}
+
+function removeRange(idx) {
+    ranges.splice(idx, 1);
+    renderRanges();
+}
+
+async function executeSplit() {
+    if (!splitterDoc || ranges.length === 0) return;
+    const progressDiv = $('splitProgress');
+    const progressBar = progressDiv.querySelector('progress');
+    progressDiv.classList.remove('hidden');
+    try {
+        if (typeof JSZip === 'undefined') {
+            await new Promise((res,rej)=>{
+                const s=document.createElement('script');
+                s.src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+                s.onload=res;s.onerror=rej;document.head.appendChild(s);
+            });
+        }
+        const zip = new JSZip();
+        for (let i = 0; i < ranges.length; i++) {
+            const r = ranges[i];
+            const newDoc = await PDFDocument.create();
+            const indices = [];
+            for (let p = r.from - 1; p < r.to; p++) indices.push(p);
+            const copied = await newDoc.copyPages(splitterDoc, indices);
+            copied.forEach(p => newDoc.addPage(p));
+            const bytes = await newDoc.save();
+            const baseName = splitterFileName.replace('.pdf','');
+            zip.file(`${baseName}_نطاق_${i+1}_صفحات_${r.from}-${r.to}.pdf`, bytes);
+            progressBar.value = ((i+1)/ranges.length)*100;
+        }
+        const blob = await zip.generateAsync({ type: 'blob' });
+        saveAs(blob, `${splitterFileName.replace('.pdf','')}_نطاقات.zip`);
+        toast('تم تقسيم النطاقات بنجاح');
+    } catch(e) {
+        toast('خطأ: ' + e.message);
+    } finally {
+        progressDiv.classList.add('hidden');
+        progressBar.value = 0;
+    }
+}
+
+function resetSplitter() {
+    splitterDoc = null;
+    splitterPdfJs = null;
+    splitterBytes = null;
+    splitterTotalPages = 0;
+    splitterFileName = '';
+    ranges = [];
+    $('splitterWorkspace').classList.add('hidden');
+    splitterUploadZone.classList.remove('hidden');
+}
+
+// ==================== MERGE ====================
+const mergeUploadZone = $('mergeUploadZone');
+mergeUploadZone.addEventListener('click', () => $('globalFileInput').click());
+mergeUploadZone.addEventListener('dragover', e => { e.preventDefault(); mergeUploadZone.classList.add('drag-over'); });
+mergeUploadZone.addEventListener('dragleave', () => mergeUploadZone.classList.remove('drag-over'));
+mergeUploadZone.addEventListener('drop', e => {
+    e.preventDefault();
+    mergeUploadZone.classList.remove('drag-over');
+    const files = Array.from(e.dataTransfer.files);
+    files.forEach(f => addMergeFile(f));
+});
+
+function addMergeFile(file) {
+    if (file.type !== 'application/pdf') return toast(`${file.name} ليس PDF`);
+    mergeFiles.push(file);
+    renderMergeList();
+}
+function renderMergeList() {
+    const list = $('mergeFileList');
+    list.innerHTML = mergeFiles.map((f,i) => `
+        <div style="background:#f8fafc;border-radius:50px;padding:10px 20px;margin:6px 0;display:flex;justify-content:space-between;align-items:center;border:1px solid #e2e8f0;">
+            <span><i class="fas fa-file-pdf" style="color:#4f46e5;"></i> ${f.name}</span>
+            <button class="btn btn-ghost btn-sm" onclick="mergeFiles.splice(${i},1);renderMergeList();"><i class="fas fa-times"></i></button>
+        </div>
+    `).join('');
+    $('mergeExecuteBtn').classList.toggle('hidden', mergeFiles.length === 0);
+}
+async function executeMerge() {
+    if (mergeFiles.length === 0) return;
+    try {
+        const merged = await PDFDocument.create();
+        for (let f of mergeFiles) {
+            const buf = await f.arrayBuffer();
+            const doc = await PDFDocument.load(buf);
+            const copied = await merged.copyPages(doc, doc.getPageIndices());
+            copied.forEach(p => merged.addPage(p));
+        }
+        const bytes = await merged.save();
+        const blob = new Blob([bytes], { type: 'application/pdf' });
+        saveAs(blob, 'merged_document.pdf');
+        toast('تم الدمج بنجاح');
+        mergeFiles = [];
+        renderMergeList();
+    } catch(e) { toast('خطأ في الدمج'); }
+}
+
+// ==================== INIT ====================
+console.log('✅ PDF Pro Editor جاهز');
+console.log('📌 تبويبات: تحرير | تقسيم النطاقات | دمج');
+console.log('💡 للتثبيت: استخدم "إضافة إلى الشاشة الرئيسية" من المتصفح');
+</script>
+</body>
+</html>
